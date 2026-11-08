@@ -1,0 +1,7 @@
+# Archivos de Windows
+desktop.ini
+Thumbs.db
+
+# Imágenes originales de trabajo (la web usa las versiones optimizadas de assets/img)
+/*.jpg
+/*.png
