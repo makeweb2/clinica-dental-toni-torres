@@ -172,10 +172,12 @@
     });
   });
 
-  // Menú móvil
+  // Menú móvil: el panel baja como el toldo y los enlaces se descuelgan como carteles
   const burger = $(".nav__burger");
   const menu = $("#mobileMenu");
+  const menuItems = $$("nav a, .mobile-menu__foot > *", menu);
   let menuOpen = false;
+  if (hasGSAP) gsap.set(menu, { yPercent: -100 });
   const toggleMenu = (open = !menuOpen) => {
     menuOpen = open;
     burger.setAttribute("aria-expanded", String(open));
@@ -183,12 +185,18 @@
     menu.setAttribute("aria-hidden", String(!open));
     document.body.style.overflow = open ? "hidden" : "";
     if (hasGSAP) {
+      gsap.killTweensOf([menu, ...menuItems]);
       if (open) {
         gsap.set(menu, { visibility: "visible" });
-        gsap.to(menu, { clipPath: "circle(150% at calc(100% - 40px) 40px)", duration: 0.8, ease: "expo.inOut" });
-        gsap.fromTo($$("nav a, .mobile-menu__foot > *", menu), { y: 40, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.05, delay: 0.25 });
+        gsap.to(menu, { yPercent: 0, duration: reduceMotion ? 0 : 0.85, ease: "expo.inOut" });
+        if (!reduceMotion) {
+          gsap.fromTo(menuItems,
+            { rotationX: -100, opacity: 0, transformPerspective: 700, transformOrigin: "50% 0%" },
+            { rotationX: 0, opacity: 1, duration: 1.1, stagger: 0.06, delay: 0.4, ease: "elastic.out(1, 0.55)" });
+        }
       } else {
-        gsap.to(menu, { clipPath: "circle(0% at calc(100% - 40px) 40px)", duration: 0.6, ease: "expo.inOut", onComplete: () => gsap.set(menu, { visibility: "hidden" }) });
+        gsap.to(menuItems, { opacity: 0, duration: 0.2 });
+        gsap.to(menu, { yPercent: -100, duration: reduceMotion ? 0 : 0.7, delay: 0.1, ease: "expo.inOut", onComplete: () => gsap.set(menu, { visibility: "hidden" }) });
       }
     } else {
       menu.style.visibility = open ? "visible" : "hidden";
@@ -199,32 +207,9 @@
   document.addEventListener("keydown", (e) => e.key === "Escape" && menuOpen && toggleMenu(false));
 
   /* ------------------------------------------------------------------------
-     Micro-interacciones: botones magnéticos, brillo y tarjetas con inclinación
+     Micro-interacciones: tarjetas con inclinación
      ------------------------------------------------------------------------ */
-  $$(".btn").forEach((btn) => {
-    btn.addEventListener("pointermove", (e) => {
-      const r = btn.getBoundingClientRect();
-      btn.style.setProperty("--mx", `${e.clientX - r.left}px`);
-      btn.style.setProperty("--my", `${e.clientY - r.top}px`);
-    });
-  });
-
   if (hasGSAP && finePointer && !reduceMotion) {
-    $$(".magnetic").forEach((el) => {
-      const xTo = gsap.quickTo(el, "x", { duration: 0.5, ease: "power3" });
-      const yTo = gsap.quickTo(el, "y", { duration: 0.5, ease: "power3" });
-      el.addEventListener("pointermove", (e) => {
-        const r = el.getBoundingClientRect();
-        const dx = e.clientX - r.left - r.width / 2;
-        const dy = e.clientY - r.top - r.height / 2;
-        if (Math.abs(dx) > r.width / 2 + 8 || Math.abs(dy) > r.height / 2 + 8) { xTo(0); yTo(0); return; }
-        xTo(gsap.utils.clamp(-10, 10, dx * 0.25));
-        yTo(gsap.utils.clamp(-8, 8, dy * 0.35));
-      });
-      el.addEventListener("pointerleave", () => { xTo(0); yTo(0); });
-      window.addEventListener("scroll", () => { xTo(0); yTo(0); }, { passive: true });
-    });
-
     $$("[data-tilt]").forEach((card) => {
       const rx = gsap.quickTo(card, "rotationX", { duration: 0.6, ease: "power3" });
       const ry = gsap.quickTo(card, "rotationY", { duration: 0.6, ease: "power3" });
@@ -252,7 +237,6 @@
       .from(".nav__awning-fabric", { rotationX: -90, opacity: 0, duration: 1, ease: "back.out(1.6)" }, "-=1")
       .from(".nav__brand > *, .nav__links a, .nav__cta, .nav__burger", { yPercent: -60, opacity: 0, stagger: 0.04, duration: 0.7 }, "-=0.9")
       .from(".hero__card", { y: 40, opacity: 0, scale: 0.98, duration: 1.1 }, "-=0.8")
-      .from(".hero__badge", { y: 20, opacity: 0, duration: 0.7 }, "-=0.6")
       .from(".hero__title .word", { yPercent: 110, rotate: 4, duration: 1.1, stagger: 0.07 }, "-=0.5")
       .fromTo(".underline path", { strokeDasharray: 320, strokeDashoffset: 320 }, { strokeDashoffset: 0, duration: 1.2, ease: "power2.inOut" }, "-=0.5")
       .from(".hero__lead", { y: 20, opacity: 0, duration: 0.8 }, "-=1.1")
@@ -306,29 +290,19 @@
       onEnter: (els) => gsap.to(els, { opacity: 1, y: 0, stagger: 0.09, duration: 1, overwrite: true }),
     });
 
-    // Cinta en bucle infinito que acelera con el scroll
-    const ribbon = $(".ribbon__track");
-    ribbon.innerHTML += ribbon.innerHTML;
-    const ribbonTween = gsap.to(ribbon, { xPercent: -50, duration: 28, ease: "none", repeat: -1 });
-    ScrollTrigger.create({
-      onUpdate: (self) => {
-        const v = Math.min(Math.abs(self.getVelocity()) / 600, 4);
-        gsap.to(ribbonTween, { timeScale: (self.direction === -1 ? -1 : 1) * (1 + v), duration: 0.3, overwrite: true });
-        gsap.to(ribbonTween, { timeScale: self.direction === -1 ? -1 : 1, duration: 1.2, delay: 0.3 });
-      },
-    });
-
     // La clínica
-    gsap.fromTo(".about__photo img", { yPercent: -10 }, {
-      yPercent: 0, ease: "none",
-      scrollTrigger: { trigger: ".about__photo", start: "top bottom", end: "bottom top", scrub: true },
+    gsap.fromTo(".storefront__zoom", { clipPath: "inset(10% 10% 10% 10% round 28px)" }, {
+      clipPath: "inset(0% 0% 0% 0% round 28px)", duration: 1.6, ease: "expo.out", clearProps: "clipPath",
+      scrollTrigger: { trigger: ".storefront", start: "top 80%" },
     });
-    gsap.from(".about__photo", {
-      clipPath: "inset(12% 12% 12% 12% round 28px)", duration: 1.6, ease: "expo.out",
-      scrollTrigger: { trigger: ".about__photo", start: "top 80%" },
+    gsap.from(".pin", {
+      scale: 0, opacity: 0, duration: 0.8, stagger: 0.12, delay: 0.6, ease: "back.out(2.4)",
+      scrollTrigger: { trigger: ".storefront", start: "top 80%" },
     });
-    gsap.from(".about__stamp", { scale: 0, rotate: -120, duration: 1.4, ease: "back.out(1.6)", scrollTrigger: { trigger: ".about__media", start: "top 60%" } });
-    gsap.to(".about__stamp-text", { rotate: 360, duration: 22, ease: "none", repeat: -1, transformOrigin: "50% 50%" });
+    gsap.from(".storefront__notes li", {
+      x: 30, opacity: 0, duration: 0.9, stagger: 0.1,
+      scrollTrigger: { trigger: ".storefront__notes", start: "top 85%" },
+    });
 
     // Tarjetas de servicios
     gsap.from(".service-card", {
@@ -357,7 +331,10 @@
     gsap.from(".chip", { y: 18, opacity: 0, stagger: 0.03, duration: 0.6, scrollTrigger: { trigger: ".booker", start: "top 70%" } });
 
     // Contacto y pie
-    gsap.from(".contact__map", { clipPath: "inset(0 0 100% 0 round 28px)", duration: 1.4, ease: "expo.inOut", scrollTrigger: { trigger: ".contact", start: "top 70%" } });
+    gsap.fromTo(".contact__map", { clipPath: "inset(0% 0% 100% 0% round 28px)" }, {
+      clipPath: "inset(0% 0% 0% 0% round 28px)", duration: 1.4, ease: "expo.inOut", clearProps: "clipPath",
+      scrollTrigger: { trigger: ".contact__map", start: "top 85%", once: true },
+    });
     gsap.from(".footer__inner > *", { y: 30, opacity: 0, stagger: 0.1, scrollTrigger: { trigger: ".footer", start: "top 90%" } });
     gsap.from(".footer .nav__rule", { scaleX: 0, duration: 1.4, ease: "expo.out", scrollTrigger: { trigger: ".footer", start: "top 95%" } });
   }
@@ -387,6 +364,39 @@
       onUpdate: () => (el.textContent = fmt(obj.v)),
     });
   });
+
+  /* ------------------------------------------------------------------------
+     La clínica: puntos sobre la fachada enlazados con las notas
+     ------------------------------------------------------------------------ */
+  const zoom = $(".storefront__zoom");
+  const zoomLayer = $(".storefront__layer", zoom);
+  const pins = $$(".pin", zoom);
+  const notes = $$(".note");
+  let spot = -1;
+  const showSpot = (i) => {
+    if (i === spot) return;
+    spot = i;
+    pins.forEach((p, k) => p.classList.toggle("is-active", k === i));
+    notes.forEach((n, k) => {
+      n.classList.toggle("is-active", k === i);
+      n.setAttribute("aria-expanded", String(k === i));
+    });
+    if (!hasGSAP || reduceMotion) return;
+    // Acerca la foto hacia el punto elegido
+    const x = pins[i].style.getPropertyValue("--x");
+    const y = pins[i].style.getPropertyValue("--y");
+    gsap.to(zoomLayer, { scale: 1.14, transformOrigin: `${x} ${y}`, duration: 1.2, ease: "power3.inOut" });
+    gsap.fromTo(pins[i], { rotate: -25 }, { rotate: 0, duration: 0.8, ease: "elastic.out(1, 0.4)" });
+  };
+  pins.forEach((p, i) => p.addEventListener("click", () => showSpot(i)));
+  notes.forEach((n, i) => {
+    n.addEventListener("click", () => showSpot(i));
+    if (finePointer) n.addEventListener("mouseenter", () => showSpot(i));
+  });
+  if (hasGSAP && !reduceMotion) {
+    gsap.set(zoomLayer, { transformOrigin: "50% 21%" });
+    ScrollTrigger.create({ trigger: ".storefront", start: "top 60%", once: true, onEnter: () => showSpot(0) });
+  }
 
   /* ------------------------------------------------------------------------
      Antes y después
