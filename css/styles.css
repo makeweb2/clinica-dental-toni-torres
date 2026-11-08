@@ -511,20 +511,140 @@ p { margin: 0 0 1em; }
 .avatar--mint { background: var(--mint); }
 .avatar--sky { background: var(--sky); }
 
-.marquee { overflow: hidden; padding: 10px 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-.marquee__track { display: flex; gap: 20px; width: max-content; }
-.review {
-  width: 380px; flex: none; padding: 26px; background: #fff; border-radius: 22px; border: 1px solid var(--line);
-  display: flex; flex-direction: column; gap: 14px; transition: transform .4s var(--ease), box-shadow .4s;
+/* ---------- Arcadas dentales: cada reseña es un diente ---------- */
+.arches {
+  --tw: 290px;
+  position: relative; margin-top: 10px; padding: 6px 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(242,166,195,.14), transparent 70%);
 }
-.review:hover { transform: translateY(-6px) rotate(-.4deg); box-shadow: var(--shadow); }
-.review__top { display: flex; align-items: center; gap: 12px; }
-.review__top b { display: block; color: var(--ink); font-size: 15px; }
-.review__top small { color: var(--muted); font-size: 12.5px; }
-.review__g { margin-left: auto; width: 22px; height: 22px; }
-.review p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--text); display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
-.review .stars { font-size: 15px; }
-.review__tag { align-self: flex-start; font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 99px; background: var(--sky-50); color: var(--sky-700); }
+.marquee { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
+.marquee__track { display: flex; width: max-content; }
+
+.bite { position: relative; height: 34px; display: grid; place-items: center; }
+.bite::before { content: ""; position: absolute; left: 8%; right: 8%; top: 50%; border-top: 1.5px dashed rgba(29,34,50,.18); }
+.bite span {
+  position: relative; padding: 4px 16px; border-radius: 99px; background: var(--paper);
+  font-family: var(--f-caps); font-size: 11.5px; letter-spacing: .26em; text-transform: uppercase; color: var(--muted);
+}
+
+.tooth-review {
+  --fill: url(#toothSky);
+  position: relative; flex: none; width: calc(var(--tw) + 22px); height: calc(var(--tw) * 4 / 3);
+  cursor: default;
+}
+.tooth-review--pink { --fill: url(#toothPink); }
+.tooth-review--mint { --fill: url(#toothMint); }
+
+.tooth-review__body { position: absolute; inset: 0; will-change: transform; }
+.tooth-review--upper .tooth-review__body { transform-origin: 50% 0; }
+.tooth-review--lower .tooth-review__body { transform-origin: 50% 100%; }
+
+.tooth-review__shape {
+  position: absolute; left: 11px; top: 0; width: var(--tw); height: 100%; overflow: visible;
+  filter: drop-shadow(0 14px 18px rgba(29,34,50,.10));
+}
+.tooth-review--upper .tooth-review__shape { transform: scaleY(-1); }
+.tooth-review__shape use { fill: var(--fill); stroke: var(--navy); stroke-width: 2.4; transition: stroke .4s; }
+.tooth-review__gloss { fill: none; stroke: #fff; stroke-width: 9; stroke-linecap: round; opacity: .95; }
+.tooth-review__gloss--soft { stroke-width: 5; opacity: .7; }
+.tooth-review:hover .tooth-review__shape use { stroke: var(--sky-600); }
+
+/* Encía: las piezas se unen formando una banda continua con papilas entre dientes */
+.tooth-review__gum { position: absolute; left: -1px; width: calc(100% + 2px); height: 35%; z-index: 2; pointer-events: none; }
+.tooth-review--upper .tooth-review__gum { top: 0; }
+.tooth-review--lower .tooth-review__gum { bottom: 0; }
+.tooth-review__gum path { stroke: none; }
+.tooth-review__gum .gum-line { fill: none; stroke: rgba(255,255,255,.55); stroke-width: 2; }
+
+.tooth-review__label {
+  position: absolute; left: 50%; z-index: 3; translate: -50% 0; white-space: nowrap;
+  font-size: 10.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #fff;
+  text-shadow: 0 1px 2px rgba(150,40,80,.35);
+}
+.tooth-review--upper .tooth-review__label { top: 9%; }
+.tooth-review--lower .tooth-review__label { bottom: 9%; }
+
+.tooth-review__content {
+  position: absolute; z-index: 3; left: calc(11px + 15%); right: calc(11px + 15%);
+  display: flex; flex-direction: column; gap: 8px; color: var(--text);
+}
+.tooth-review--upper .tooth-review__content { top: 37%; bottom: 12%; }
+.tooth-review--lower .tooth-review__content { top: 12%; bottom: 36%; }
+.tooth-review__top { display: flex; align-items: center; justify-content: space-between; }
+.tooth-review__top .stars { font-size: 14px; letter-spacing: 1px; }
+.tooth-review__top svg { width: 18px; height: 18px; }
+.tooth-review__content p {
+  margin: 0; font-size: 13.2px; line-height: 1.5; color: var(--text);
+  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; flex: none;
+}
+.tooth-review__who { display: flex; align-items: center; gap: 9px; margin-top: auto; }
+.tooth-review__who .avatar { width: 30px; height: 30px; font-size: 13px; flex: none; }
+.tooth-review__who > span:last-child { min-width: 0; }
+.tooth-review__who b { display: block; font-size: 13px; color: var(--ink); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tooth-review__who small { font-size: 11.5px; color: var(--muted); }
+
+.tooth-review__sparkle {
+  position: absolute; z-index: 4; width: 26px; height: 26px; stroke: none; fill: var(--sky);
+  right: 15%; opacity: 0; scale: .3; transition: opacity .35s, scale .5s var(--ease), rotate .6s var(--ease);
+}
+.tooth-review--upper .tooth-review__sparkle { bottom: 13%; }
+.tooth-review--lower .tooth-review__sparkle { top: 6%; }
+.tooth-review:hover .tooth-review__sparkle { opacity: 1; scale: 1; rotate: 90deg; }
+.tooth-review__sparkle--b { right: auto; left: 13%; width: 16px; height: 16px; fill: var(--pink); transition-delay: .08s; }
+
+/* ---------- CTAs de cita ---------- */
+.btn--outline-light { --bg: transparent; --fg: #fff; border: 1.5px solid rgba(255,255,255,.45); }
+.btn--outline-light:hover { --bg: rgba(255,255,255,.08); border-color: #fff; }
+
+.service-card__cta {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-top: 18px; padding-top: 16px; border-top: 1px dashed #d5dde6;
+  font-weight: 700; font-size: 14.5px; color: var(--sky-600);
+}
+.service-card__cta svg { width: 18px; height: 18px; transition: transform .35s var(--ease); }
+.service-card__cta:hover svg { transform: translateX(5px); }
+.service-card__cta:hover { color: var(--sky-700); }
+
+.cta-band {
+  position: relative; margin-top: 56px; padding: 40px 48px; border-radius: var(--radius); overflow: hidden;
+  background: radial-gradient(500px 300px at 90% 0%, rgba(108,198,234,.22), transparent 60%), var(--navy);
+  color: #c6cddb; display: grid; grid-template-columns: auto 1fr auto; gap: 32px; align-items: center;
+}
+.cta-band::before, .cta-band::after { content: ""; position: absolute; left: 0; right: 0; height: 1px; background: rgba(255,255,255,.3); }
+.cta-band::before { top: 10px; } .cta-band::after { bottom: 10px; }
+.cta-band__tooth { width: 70px; height: 94px; fill: none; stroke: rgba(255,255,255,.85); stroke-width: 7; }
+.cta-band .script { color: var(--pink); font-size: 46px; margin: 0; }
+.cta-band h3 { color: #fff; font-size: clamp(22px, 2.4vw, 30px); font-weight: 800; letter-spacing: -.03em; margin: 2px 0 8px; }
+.cta-band p:last-child { margin: 0; font-size: 15.5px; max-width: 520px; }
+.cta-band__actions { display: flex; flex-direction: column; gap: 12px; }
+
+.results__cta { margin-top: 26px; }
+.about__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 26px; margin-top: 34px; }
+
+.reviews__cta {
+  margin-top: 46px; display: flex; align-items: center; gap: 24px; padding: 24px 30px;
+  background: #fff; border-radius: 24px; border: 1px solid var(--line); box-shadow: var(--shadow-sm);
+}
+.reviews__cta-tooth { width: 48px; height: 64px; flex: none; fill: var(--pink-50); stroke: var(--navy); stroke-width: 9; }
+.reviews__cta-text { flex: 1; }
+.reviews__cta .script { margin: 0; font-size: 40px; }
+.reviews__cta-text p:last-child { margin: 4px 0 0; color: var(--muted); }
+
+.book-bar {
+  position: fixed; left: 50%; bottom: 22px; z-index: 40; translate: -50% 160%;
+  display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 22px; border-radius: 99px;
+  background: var(--navy); color: #fff; box-shadow: 0 20px 50px -14px rgba(20,24,36,.55);
+  transition: translate .6s var(--ease);
+}
+.book-bar.is-visible { translate: -50% 0; }
+.book-bar__text { display: flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 600; margin-right: 6px; white-space: nowrap; }
+.book-bar__text svg { width: 18px; height: 24px; fill: var(--pink); stroke: none; }
+.book-bar__btn { border-radius: 99px; padding: 11px 20px; }
+.book-bar__icon { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.1); transition: background .3s; flex: none; }
+.book-bar__icon:hover { background: rgba(255,255,255,.2); }
+.book-bar__icon svg { width: 19px; height: 19px; }
+.book-bar__icon--wa { background: #25d366; }
+.book-bar__icon--wa:hover { background: #1fbd5a; }
 
 /* ==========================================================================
    CITA
@@ -714,6 +834,8 @@ p { margin: 0 0 1em; }
   .booking__grid { grid-template-columns: 1fr; }
   .footer__inner { grid-template-columns: 1fr 1fr; }
   .footer__brand { grid-column: 1 / -1; }
+  .cta-band { grid-template-columns: auto 1fr; }
+  .cta-band__actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
 }
 @media (max-width: 680px) {
   .section { padding: 76px 0; }
@@ -748,7 +870,21 @@ p { margin: 0 0 1em; }
   .compare { aspect-ratio: 4 / 4.6; }
   .score { width: 100%; }
   .score__num { font-size: 58px; }
-  .review { width: 300px; }
+  .arches { --tw: 240px; }
+  .tooth-review__content { gap: 6px; }
+  .tooth-review__content p { -webkit-line-clamp: 4; font-size: 12.5px; }
+  .tooth-review__top .stars { font-size: 12px; }
+  .bite span { font-size: 10px; letter-spacing: .16em; }
+  .cta-band { grid-template-columns: 1fr; padding: 34px 22px; gap: 18px; }
+  .cta-band__tooth { width: 46px; height: 62px; }
+  .cta-band__actions .btn { width: 100%; }
+  .reviews__cta { flex-direction: column; align-items: flex-start; padding: 22px; }
+  .reviews__cta .btn, .about__actions .btn { width: 100%; }
+  .book-bar { left: 10px; right: 10px; bottom: 10px; translate: 0 160%; padding: 8px; }
+  .book-bar.is-visible { translate: 0 0; }
+  .book-bar__text { display: none; }
+  .book-bar__btn { flex: 1; }
+  .wa-float { display: none; }
 
   .booking__grid { border-radius: 26px; }
   .booking__aside { padding: 32px 24px; }

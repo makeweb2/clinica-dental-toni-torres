@@ -49,9 +49,9 @@
   ];
 
   const CASES = [
-    { title: "Estética dental", sub: "Rehabilitación del sector anterior", before: "assets/img/ba1-antes.jpg", after: "assets/img/ba1-despues.jpg" },
-    { title: "Blanqueamiento", sub: "Sonrisa varios tonos más clara", before: "assets/img/ba2-antes.jpg", after: "assets/img/ba2-despues.jpg" },
-    { title: "Reposición de diente", sub: "Recuperamos la pieza perdida", before: "assets/img/ba3-antes.jpg", after: "assets/img/ba3-despues.jpg" },
+    { title: "Estética dental", sub: "Rehabilitación del sector anterior", before: "assets/img/ba1-antes.jpg", after: "assets/img/ba1-despues.jpg", book: "Primera visita / revisión" },
+    { title: "Blanqueamiento", sub: "Sonrisa varios tonos más clara", before: "assets/img/ba2-antes.jpg", after: "assets/img/ba2-despues.jpg", book: "Blanqueamiento dental" },
+    { title: "Reposición de diente", sub: "Recuperamos la pieza perdida", before: "assets/img/ba3-antes.jpg", after: "assets/img/ba3-despues.jpg", book: "Primera visita / revisión" },
   ];
 
   const $ = (s, c = document) => c.querySelector(s);
@@ -84,20 +84,42 @@
 
   const avatarColors = ["avatar--pink", "avatar--mint", "avatar--sky"];
   const gIcon = `<svg class="review__g" viewBox="0 0 48 48" aria-label="Google"><path fill="#FFC107" stroke="none" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" stroke="none" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" stroke="none" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" stroke="none" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`;
-  const reviewHTML = (r, i) => `
-    <article class="review">
-      <div class="review__top">
-        <span class="avatar ${avatarColors[i % 3]}">${r.n.charAt(0)}</span>
-        <span><b>${r.n}</b><small>${r.d}</small></span>
-        ${gIcon}
+  // Cada reseña se dibuja como un diente: la fila de arriba es la arcada superior
+  // (raíces arriba, dentro de la encía) y la de abajo la inferior.
+  const toothTints = ["sky", "pink", "mint"];
+  const sparkle = `<path d="M12 2c.6 4.8 2.2 7.4 10 10-7.8 2.6-9.4 5.2-10 10-.6-4.8-2.2-7.4-10-10 7.8-2.6 9.4-5.2 10-10Z"/>`;
+  const gums = {
+    upper: `<path fill="url(#gumGrad)" d="M0 0H320V139C294 139 264 120 160 118 56 120 26 139 0 139Z"/><path class="gum-line" d="M0 139C26 139 56 120 160 118 264 120 294 139 320 139"/>`,
+    lower: `<path fill="url(#gumGradLow)" d="M0 140H320V1C294 1 264 20 160 22 56 20 26 1 0 1Z"/><path class="gum-line" d="M0 1C26 1 56 20 160 22 264 20 294 1 320 1"/>`,
+  };
+  const toothHTML = (r, i, jaw) => {
+    const who = `
+        <div class="tooth-review__who">
+          <span class="avatar ${avatarColors[i % 3]}">${r.n.charAt(0)}</span>
+          <span><b>${r.n}</b><small>${r.d}</small></span>
+        </div>`;
+    const top = `<div class="tooth-review__top"><span class="stars" aria-label="5 estrellas">★★★★★</span>${gIcon}</div>`;
+    return `
+    <article class="tooth-review tooth-review--${jaw} tooth-review--${toothTints[i % 3]}">
+      <div class="tooth-review__body">
+        <svg class="tooth-review__shape" viewBox="0 0 300 400" aria-hidden="true">
+          <use href="#toothPath"/>
+          <path class="tooth-review__gloss" d="M62 70C70 48 88 38 110 38"/>
+          <path class="tooth-review__gloss tooth-review__gloss--soft" d="M236 56C246 66 252 80 254 96"/>
+        </svg>
+        <svg class="tooth-review__sparkle" viewBox="0 0 24 24" aria-hidden="true">${sparkle}</svg>
+        <svg class="tooth-review__sparkle tooth-review__sparkle--b" viewBox="0 0 24 24" aria-hidden="true">${sparkle}</svg>
+        <div class="tooth-review__content">
+          ${top}<p>${r.t}</p>${who}
+        </div>
       </div>
-      <span class="stars" aria-label="5 estrellas">★★★★★</span>
-      <p>${r.t}</p>
-      <span class="review__tag">${r.tag}</span>
+      <svg class="tooth-review__gum" viewBox="0 0 320 140" preserveAspectRatio="none" aria-hidden="true">${gums[jaw]}</svg>
+      <span class="tooth-review__label">${r.tag}</span>
     </article>`;
+  };
   const half = Math.ceil(REVIEWS.length / 2);
-  $("#reviewsRowA").innerHTML = REVIEWS.slice(0, half).map(reviewHTML).join("");
-  $("#reviewsRowB").innerHTML = REVIEWS.slice(half).map((r, i) => reviewHTML(r, i + 1)).join("");
+  $("#reviewsRowA").innerHTML = REVIEWS.slice(0, half).map((r, i) => toothHTML(r, i, "upper")).join("");
+  $("#reviewsRowB").innerHTML = REVIEWS.slice(half).map((r, i) => toothHTML(r, i + 1, "lower")).join("");
 
   /* ------------------------------------------------------------------------
      Navegación
@@ -421,6 +443,7 @@
       b.setAttribute("aria-selected", String(k === i));
     });
     caption.textContent = `${c.title} · ${c.sub}`;
+    $("#caseCta").dataset.book = c.book;
     const swap = () => { imgAfter.src = c.after; imgBefore.src = c.before; };
     if (hasGSAP && !reduceMotion) {
       gsap.timeline()
@@ -471,14 +494,36 @@
   $$(".marquee").forEach((m) => {
     const track = $(".marquee__track", m);
     track.innerHTML += track.innerHTML;
-    $$(".review", track).slice(track.children.length / 2).forEach((r) => r.setAttribute("aria-hidden", "true"));
+    const teeth = $$(".tooth-review", track);
+    teeth.slice(teeth.length / 2).forEach((r) => r.setAttribute("aria-hidden", "true"));
     if (!hasGSAP || reduceMotion) { m.style.overflowX = "auto"; return; }
     const dir = +m.dataset.direction;
-    const tween = gsap.fromTo(track, { xPercent: dir < 0 ? 0 : -50 }, { xPercent: dir < 0 ? -50 : 0, duration: 70, ease: "none", repeat: -1 });
+    const upper = m.classList.contains("marquee--upper");
+    const tween = gsap.fromTo(track, { xPercent: dir < 0 ? 0 : -50 }, { xPercent: dir < 0 ? -50 : 0, duration: 80, ease: "none", repeat: -1 });
     m.addEventListener("mouseenter", () => gsap.to(tween, { timeScale: 0, duration: 0.6 }));
     m.addEventListener("mouseleave", () => gsap.to(tween, { timeScale: 1, duration: 0.6 }));
-    gsap.from(m, { opacity: 0, x: dir * 120, duration: 1.4, ease: "expo.out", scrollTrigger: { trigger: m, start: "top 92%" } });
+
+    // Los dientes "salen" de la encía al entrar en pantalla
+    gsap.from($$(".tooth-review__body", track), {
+      yPercent: upper ? -28 : 28, opacity: 0, duration: 1.2, ease: "back.out(1.4)", stagger: 0.06,
+      scrollTrigger: { trigger: m, start: "top 88%" },
+    });
+
+    // Al pasar por encima el diente se "mueve" como una pieza suelta y brilla
+    teeth.forEach((tooth) => {
+      const body = $(".tooth-review__body", tooth);
+      const wobble = () => {
+        if (gsap.isTweening(body)) return;
+        gsap.fromTo(body, { rotation: 0 }, { keyframes: { rotation: [-4, 3.5, -2.5, 1.2, 0] }, duration: 0.9, ease: "power1.inOut" });
+      };
+      tooth.addEventListener("mouseenter", wobble);
+      tooth.addEventListener("click", wobble);
+    });
   });
+  if (!finePointer) $(".bite span").textContent = "Toca un diente";
+  if (hasGSAP && !reduceMotion) {
+    gsap.from(".bite", { scaleX: 0, opacity: 0, duration: 1.2, ease: "expo.out", scrollTrigger: { trigger: ".arches", start: "top 75%" } });
+  }
 
   /* ------------------------------------------------------------------------
      Sistema de citas → WhatsApp / teléfono de la clínica
@@ -690,13 +735,47 @@
     const qb = e.currentTarget.elements;
     if (qb.email.value) form.elements.email.value = qb.email.value;
     if (qb.phone.value) form.elements.phone.value = qb.phone.value;
-    if (qb.treatment.value) {
-      const radio = $$('input[name="treatment"]', chipsWrap).find((r) => r.value === qb.treatment.value);
-      if (radio) { radio.checked = true; state.treatment = radio.value; updateSummary(); }
-      if (state.step === 0) goTo(1);
-    }
+    preselect(qb.treatment.value);
     scrollToTarget($("#cita"));
   });
+
+  // Preselecciona un tratamiento y salta directamente a elegir día y hora
+  function preselect(treatment) {
+    if (!treatment || form.classList.contains("is-done")) return;
+    const radio = $$('input[name="treatment"]', chipsWrap).find((r) => r.value === treatment);
+    if (!radio) return;
+    radio.checked = true;
+    state.treatment = radio.value;
+    errorEl.textContent = "";
+    updateSummary();
+    if (state.step === 0) goTo(1);
+  }
+
+  // Todos los CTA "Pedir cita" (el scroll lo gestiona el manejador de anclas)
+  document.addEventListener("click", (e) => {
+    const cta = e.target.closest("[data-book]");
+    if (cta) preselect(cta.dataset.book);
+  });
+
+  /* ------------------------------------------------------------------------
+     Barra de reserva fija: aparece tras el hero y se oculta en la sección de cita
+     ------------------------------------------------------------------------ */
+  const bookBar = $("#bookBar");
+  const hero = $(".hero");
+  const citaSection = $("#cita");
+  const footer = $(".footer");
+  const updateBookBar = () => {
+    const vh = window.innerHeight;
+    const pastHero = hero.getBoundingClientRect().bottom < 80;
+    const c = citaSection.getBoundingClientRect();
+    const inCita = c.top < vh * 0.85 && c.bottom > vh * 0.15;
+    const inFooter = footer.getBoundingClientRect().top < vh - 40;
+    bookBar.classList.toggle("is-visible", pastHero && !inCita && !inFooter && !menuOpen);
+  };
+  window.addEventListener("scroll", updateBookBar, { passive: true });
+  window.addEventListener("resize", updateBookBar);
+  burger.addEventListener("click", updateBookBar);
+  updateBookBar();
 
   if (hasGSAP) window.addEventListener("load", () => ScrollTrigger.refresh());
 })();
